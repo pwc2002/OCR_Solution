@@ -1,0 +1,107 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: mediview-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mediview}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_KEY: ${API_KEY:-}
+    container_name: mediview-app
+    environment:
+      # API 설정
+      API_KEY: ${API_KEY}
+      API_KEY_HEADER: ${API_KEY_HEADER:-Authorization}
+
+      # 데이터베이스
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/mediview}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-20}
+
+      # OCR 설정
+      OCR_WORKERS: ${OCR_WORKERS:-2}
+      OCR_MAX_QUEUE: ${OCR_MAX_QUEUE:-30}
+      OCR_DPI: ${OCR_DPI:-300}
+      OCR_MODEL_DIR: ${OCR_MODEL_DIR:-/app/models}
+      # PaddleOCR 모델 디렉토리 (볼륨 마운트 경로)
+      PADDLEOCR_HOME: ${PADDLEOCR_HOME:-/root/.paddleocr}
+
+      # 파일 설정
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-10}
+      TEMP_DIR: ${TEMP_DIR:-/tmp/mediview}
+
+      # 서버 설정
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-8080}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+      # 애플리케이션
+      APP_NAME: ${APP_NAME:-mediview}
+      APP_VERSION: ${APP_VERSION:-0.1.0}
+
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 6G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./app:/app/app
+      - /app/app/dashboard/node_modules # node_modules 유지
+      - ./migrations:/app/migrations
+      - ./.env:/app/.env
+      - models_data:/app/models
+      - paddleocr_models:/root/.paddleocr # PaddleOCR 모델 영구 저장 (재다운로드 방지)
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '대시보드 빌드 시작...' &&
+        cd /app/app/dashboard &&
+        echo 'API_KEY를 VITE_API_KEY로 변환하여 .env 파일 생성...' &&
+        echo \"VITE_API_KEY=$${API_KEY}\" > .env &&
+        echo '대시보드 의존성 확인 중...' &&
+        if [ ! -d 'node_modules' ]; then
+          echo 'node_modules가 없습니다. npm install 실행...' &&
+          npm install --legacy-peer-deps || echo 'npm install 경고 (계속 진행)';
+        fi &&
+        echo '대시보드 빌드 실행...' &&
+        npm run build &&
+        echo '대시보드 빌드 완료' &&
+        cd /app &&
+        echo '데이터베이스 초기화 대기 중...' &&
+        sleep 5 &&
+        python -c 'from app.core.dao import init_db; init_db()' &&
+        echo '서버 시작...' &&
+        uvicorn app.api.server:app --host 0.0.0.0 --port 8080
+      "
+
+volumes:
+  postgres_data:
+  models_data:
+  paddleocr_models:
+    # PaddleOCR 모델 저장소
+
+networks:
+  default:
+    name: mediview-network
