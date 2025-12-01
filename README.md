@@ -103,7 +103,7 @@ docker save -o mediview-ocr_v1.0.0.tar mediview-ocr:v1.0.0
 
 GitHub Releases 페이지에서 미리 빌드된 이미지 파일을 다운로드할 수 있습니다.
 
-- [mediview-ocr_v1.0.0.tar 다운로드](https://github.com/pwc2002/mediview/releases/tag/v1.0.0)
+- [mediview-ocr_v1.0.0.tar 다운로드](https://github.com/pwc2002/OCR_Solution/releases/tag/v1.0.0)
 
 #### 2. 모델 파일 준비
 
