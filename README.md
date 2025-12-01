@@ -41,7 +41,10 @@ docker-compose up -d
 3. 서비스 확인
 
 - API 서버: http://localhost:8080
+  <img width="1204" height="543" alt="image" src="https://github.com/user-attachments/assets/969f60f0-dad5-43eb-ac65-3339a161e069" />
 - API 문서: http://localhost:8080/docs
+  <img width="1429" height="828" alt="image" src="https://github.com/user-attachments/assets/f635a957-d54e-4376-896c-b20a2e6b19d7" />
+
 
 ### 로컬 개발 환경
 
