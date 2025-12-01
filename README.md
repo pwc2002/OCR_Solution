@@ -85,33 +85,43 @@ ocr-cli server
 
 인터넷이 차단된 내부망 환경 배포를 위해, 모든 의존성과 AI 모델이 포함된 Docker 이미지를 파일로 제공합니다.
 
-#### 1. 배포 파일 준비 (인터넷 가능 PC)
+#### 1. 배포 파일 준비
+
+**방법 A: 직접 빌드 (추천)**
+
+인터넷이 가능한 PC에서 직접 이미지를 빌드하고 추출합니다.
 
 ```bash
-# 1) Docker 이미지 빌드 (이 과정에서 모델 파일이 이미지에 포함됨)
+# 1) Docker 이미지 빌드
 docker build -t mediview-ocr:v1.0.0 .
 
 # 2) 이미지를 파일로 추출 (.tar)
 docker save -o mediview-ocr_v1.0.0.tar mediview-ocr:v1.0.0
 ```
 
-#### 2. 서버 배포 (내부망)
+**방법 B: 빌드된 파일 다운로드**
 
-전달받은 `.tar` 파일만 있으면 인터넷 연결 없이 설치 가능합니다.
+GitHub Releases 페이지에서 미리 빌드된 이미지 파일을 다운로드할 수 있습니다.
+
+- [mediview-ocr_v1.0.0.tar 다운로드](https://github.com/pwc2002/mediview/releases/tag/v1.0.0)
+
+#### 2. 모델 파일 준비
+
+Docker 이미지 외에, `paddleocr_models` 폴더(AI 모델 파일)도 함께 전달해야 합니다.
+프로젝트에 포함된 `paddleocr_models` 폴더를 압축하여 내부망 서버로 가져가세요.
+
+#### 3. 서버 배포 (내부망)
+
+전달받은 `.tar` 파일이 있으면 인터넷 연결 없이 설치 가능합니다.
 
 ```bash
 # 1) 이미지 로드
 docker load -i mediview-ocr_v1.0.0.tar
 
-# 2) 실행 (docker-compose.yml이 있는 경우)
-# docker-compose.yml에서 image: mediview-ocr:v1.0.0 으로 수정 후:
+# 2) 실행 (docker-compose.yml이 있는 위치에서)
 docker-compose up -d
-
-# 또는 단일 컨테이너 실행:
-docker run -d -p 8080:8080 mediview-ocr:v1.0.0
 ```
 
-> **참고**: 빌드된 이미지에는 Python 패키지와 한국어/영어 OCR 모델 파일이 모두 포함되어 있어 추가 다운로드가 필요 없습니다.
 
 ## 사용법
 
