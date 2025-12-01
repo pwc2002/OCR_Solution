@@ -105,12 +105,7 @@ GitHub Releases 페이지에서 미리 빌드된 이미지 파일을 다운로�
 
 - [mediview-ocr_v1.0.0.tar 다운로드](https://github.com/pwc2002/OCR_Solution/releases/tag/v1.0.0)
 
-#### 2. 모델 파일 준비
-
-Docker 이미지 외에, `paddleocr_models` 폴더(AI 모델 파일)도 함께 전달해야 합니다.
-프로젝트에 포함된 `paddleocr_models` 폴더를 압축하여 내부망 서버로 가져가세요.
-
-#### 3. 서버 배포 (내부망)
+#### 2. 서버 배포 (내부망)
 
 전달받은 `.tar` 파일이 있으면 인터넷 연결 없이 설치 가능합니다.
 
