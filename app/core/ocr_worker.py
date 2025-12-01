@@ -80,7 +80,6 @@ class OCRWorker:
         paddle_lang = normalize_lang_code(lang)
         
         # PaddleOCR 초기화 (PP-OCRv5 설정 반영)
-        # Quick Start 가이드에 따른 설정
         self.ocr = PaddleOCR(
             lang=paddle_lang,
             use_doc_orientation_classify=False,
@@ -140,8 +139,6 @@ class OCRWorker:
         # 각 페이지별 아이템에 대해 후처리 진행
         for page in final_results:
             if page['items']:
-                # 어절 병합 및 bbox 정규화 (기존 postprocessor 활용)
-                # [수정] 원본 데이터 보존을 위해 병합 로직 비활성화 (User Request)
                 
                 for item in page['items']:
                     item['bbox'] = self.postprocessor.normalize_bbox(
@@ -252,7 +249,6 @@ class OCRWorker:
                                         }
                                 except Exception as e:
                                     logger.warning(f"좌표 변환 실패 index={i}: {e}")
-
                             items.append({
                                 'text': text,
                                 'bbox': bbox,

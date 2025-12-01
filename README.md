@@ -81,6 +81,38 @@ uvicorn app.api.server:app --host 0.0.0.0 --port 8080
 ocr-cli server
 ```
 
+### 폐쇄망(Offline) 배포 가이드
+
+인터넷이 차단된 내부망 환경 배포를 위해, 모든 의존성과 AI 모델이 포함된 Docker 이미지를 파일로 제공합니다.
+
+#### 1. 배포 파일 준비 (인터넷 가능 PC)
+
+```bash
+# 1) Docker 이미지 빌드 (이 과정에서 모델 파일이 이미지에 포함됨)
+docker build -t mediview-ocr:v1.0.0 .
+
+# 2) 이미지를 파일로 추출 (.tar)
+docker save -o mediview-ocr_v1.0.0.tar mediview-ocr:v1.0.0
+```
+
+#### 2. 서버 배포 (내부망)
+
+전달받은 `.tar` 파일만 있으면 인터넷 연결 없이 설치 가능합니다.
+
+```bash
+# 1) 이미지 로드
+docker load -i mediview-ocr_v1.0.0.tar
+
+# 2) 실행 (docker-compose.yml이 있는 경우)
+# docker-compose.yml에서 image: mediview-ocr:v1.0.0 으로 수정 후:
+docker-compose up -d
+
+# 또는 단일 컨테이너 실행:
+docker run -d -p 8080:8080 mediview-ocr:v1.0.0
+```
+
+> **참고**: 빌드된 이미지에는 Python 패키지와 한국어/영어 OCR 모델 파일이 모두 포함되어 있어 추가 다운로드가 필요 없습니다.
+
 ## 사용법
 
 ### API 사용

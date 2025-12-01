@@ -69,8 +69,10 @@ services:
       - /app/app/dashboard/node_modules # node_modules 유지
       - ./migrations:/app/migrations
       - ./.env:/app/.env
-      - models_data:/app/models
-      - paddleocr_models:/root/.paddleocr # PaddleOCR 모델 영구 저장 (재다운로드 방지)
+      # 호스트의 paddleocr_models 폴더를 컨테이너의 모델 경로에 마운트
+      - ./paddleocr_models:/root/.paddleocr
+      - ./paddleocr_models:/root/.paddlex
+      # - models_data:/app/models
     depends_on:
       postgres:
         condition: service_healthy
